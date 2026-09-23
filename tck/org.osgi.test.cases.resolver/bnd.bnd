@@ -1,0 +1,63 @@
+# Set javac settings from JDT prefs
+
+Bundle-Description: Tests the Resolver service
+
+-conditionalpackage					= org.osgi.test.support.*
+-privatepackage						=  \
+	${p}.junit.*
+Import-Package: ${-signaturetest}, *
+
+-includeresource = tb1.jar, \
+				   requirebundleB.jar, \
+				   requirebundleC.jar, \
+				   requirebundleD.jar, \
+				   requirebundleE.jar, \
+				   classloading.tb1.jar, \
+				   classloading.tb13b.jar, \
+				   classloading.tb13c.jar, \
+				   classloading.tb13g.jar, \
+				   classloading.tb16a.jar, \
+				   classloading.tb16b.jar, \
+				   classloading.tb16c.jar, \
+				   classloading.tb16i.jar, \
+				   classloading.tb16k.jar, \
+				   classloading.tb17a.jar, \
+				   classloading.tb17d.jar, \
+				   classloading.tb17g.jar, \
+				   classloading.tb8b.jar, \
+				   classloading.tb9a.jar, \
+				   dynpkgimport.tlx.jar, \
+				   dynpkgimport.tb0.jar, \
+				   fragments.tb1a.jar, \
+				   fragments.tb1b.jar, \
+				   fragments.tb1d.jar, \
+				   fragments.tb1g.jar, \
+			 	   fragments.tb3a.jar, \
+				   fragments.tb3d.jar, \
+				   fragments.tb3e.jar, \
+				   fragments.tb3f.jar, \
+				   fragments.tb7c.jar, \
+				   fragments.tb7e.jar, \
+				   fragments.tb7h.jar, \
+				   resolver.tb1.v100.jar, \
+				   resolver.tb1.v110.jar, \
+				   resolver.tb1.v120.jar, \
+				   resolver.tb5.jar
+
+-fixupmessages.host: "Host * for this fragment"
+
+-signaturetest                      = org.osgi.service.resolver
+
+p: org.osgi.test.cases.resolver
+
+# Maven build: workspace includes replaced inline (from cnf/includes and build.bnd in osgi/osgi)
+# -make.maven, not -make: the key is a map entry and would displace
+# a project-level -make (webcontainer also builds .war recipes this
+# way). bnd merges all -make.* entries.
+-make.maven: (*).(jar); type=bnd; recipe="bnd/$1.bnd"
+
+testcases.junit3: ${classes;EXTENDS;junit.framework.TestCase;CONCRETE}
+testcases.junit4: ${classes;HIERARCHY_ANNOTATED;org.junit.Test;CONCRETE}
+testcases.junit5: ${classes;HIERARCHY_INDIRECTLY_ANNOTATED;org.junit.platform.commons.annotation.Testable;CONCRETE}
+Test-Cases: ${sort;${uniq;${testcases.junit3};${testcases.junit4};${testcases.junit5}}}
+-plugin.signaturetest: SignatureTest
