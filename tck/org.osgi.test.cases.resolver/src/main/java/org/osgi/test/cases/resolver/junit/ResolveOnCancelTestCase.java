@@ -17,10 +17,13 @@
  *******************************************************************************/
 package org.osgi.test.cases.resolver.junit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Collections;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.resource.Resource;
 import org.osgi.service.resolver.ResolutionException;
 
@@ -32,6 +35,7 @@ public class ResolveOnCancelTestCase extends AbstractResolverTestCase {
 	/*
 	 * Test that onCancel is called first and only once.
 	 */
+	@Test
 	public void testOnCancelCalledFirstAndOnce() {
 		TestResolveContext context = getTestContext();
 		shouldResolve(context);
@@ -42,6 +46,7 @@ public class ResolveOnCancelTestCase extends AbstractResolverTestCase {
 	 * Test that invoking the runnable from onCancel after the resolve operation
 	 * completes does not throw an exception
 	 */
+	@Test
 	public void testOnCancelCallAfterResolve() {
 		TestResolveContext context = getTestContext();
 		shouldResolve(context);
@@ -52,6 +57,7 @@ public class ResolveOnCancelTestCase extends AbstractResolverTestCase {
 	 * Test that invoking onCancel callback will terminate resolve process and
 	 * produce the expected exception
 	 */
+	@Test
 	public void testOnCancelTerminatesResolution() throws InterruptedException {
 		final TestResolveContext context = getTestContext();
 		final AtomicReference<ResolutionException> resolveError = new AtomicReference<>();
@@ -71,9 +77,8 @@ public class ResolveOnCancelTestCase extends AbstractResolverTestCase {
 			context.stopWaiting();
 		}
 		bg.join();
-		assertNotNull("No resolution exception.", resolveError.get());
-		assertTrue("Wrong cause type: " + resolveError.get(),
-				resolveError.get().getCause() instanceof CancellationException);
+		assertThat(resolveError.get()).as("No resolution exception.").isNotNull();
+		assertThat(resolveError.get().getCause() instanceof CancellationException).as("Wrong cause type: " + resolveError.get()).isTrue();
 	}
 
 	private TestResolveContext getTestContext() {

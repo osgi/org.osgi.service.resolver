@@ -17,12 +17,17 @@
  *******************************************************************************/
 package org.osgi.test.cases.resolver.junit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.fail;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -44,6 +49,7 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 	 * A simple dynamic resolution with a host wiring that has no other package
 	 * wires. The supplier is available and resolved already.
 	 */
+	@Test
 	public void testDynamicAlreadyResolvedProvider() throws Exception {
 		final TestResource dynamicResolve = new TestResource();
 		final Requirement dynamicReq = addDynamicImport(dynamicResolve, "foo");
@@ -61,8 +67,7 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 				wirings);
 		Map<Resource,List<Wire>> result = shouldDynamicResolve(context, wirings,
 				dynamicReq);
-		assertEquals("Should only be one resource in result.", 1,
-				result.size());
+		assertThat(result).as("Should only be one resource in result.").hasSize(1);
 		// check for the expected dynamic wire
 		context.checkWires(result,
 				new TestWire(dynamicResolve, dynamicReq, fooProvider, fooCap));
@@ -73,6 +78,7 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 	 * wires. The supplier not resolved and should end up resolved after the
 	 * dynamic resolution.
 	 */
+	@Test
 	public void testDynamicResolvableProvider() throws Exception {
 		final TestResource dynamicResolve = new TestResource();
 		final Requirement dynamicReq = addDynamicImport(dynamicResolve, "foo");
@@ -86,21 +92,21 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 				Collections.<Resource> singletonList(fooProvider), wirings);
 		Map<Resource,List<Wire>> result = shouldDynamicResolve(context, wirings,
 				dynamicReq);
-		assertEquals("Wrong number of resources in result.", 2,
-				result.size());
+		assertThat(result).as("Wrong number of resources in result.").hasSize(2);
 		// check for the expected dynamic wire
 		context.checkWires(result,
 				new TestWire(dynamicResolve, dynamicReq, fooProvider, fooCap));
 		// check that the provider is now resolved
 		List<Wire> fooProviderWires = result.get(fooProvider);
-		assertNotNull("No provider wires.", fooProviderWires);
+		assertThat(fooProviderWires).as("No provider wires.").isNotNull();
 		// there are no reqs so should be empty wires
-		assertEquals("Wrong number of wires.", 0, fooProviderWires.size());
+		assertThat(fooProviderWires).as("Wrong number of wires.").hasSize(0);
 	}
 
 	/*
 	 * Attempts to a dynamic resolve with no matching provider
 	 */
+	@Test
 	public void testDynamicNoProvider() {
 		final TestResource dynamicResolve = new TestResource();
 		final Requirement dynamicReq = addDynamicImport(dynamicResolve, "foo");
@@ -114,6 +120,7 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 	/*
 	 * Attempts to dynamic resolve with matching provider that cannot resolve.
 	 */
+	@Test
 	public void testDynamicUnresolvableProvider() throws Exception {
 		final TestResource dynamicResolve = new TestResource();
 		final Requirement dynamicReq = addDynamicImport(dynamicResolve, "foo");
@@ -134,6 +141,7 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 	 * a uses constraint violation. Then updates the dynamic requirement to
 	 * allow the dynamic resolution to succeed.
 	 */
+	@Test
 	public void testDynamicUsesConflict() {
 		final TestResource dynamicResolve = new TestResource();
 		final Requirement barReq = dynamicResolve.addRequirement(
@@ -183,8 +191,7 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 		Map<Resource,List<Wire>> result = shouldDynamicResolve(context, wirings,
 				dynamicReq);
 
-		assertEquals("Should only be one resource in result.", 1,
-				result.size());
+		assertThat(result).as("Should only be one resource in result.").hasSize(1);
 		// check for the expected dynamic wire
 		context.checkWires(result, new TestWire(dynamicResolve, dynamicReq,
 				foo1Provider, foo1Cap));
@@ -198,11 +205,10 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 		try {
 			result = resolver.resolveDynamic(context,
 					wirings.get(dynamicReq.getResource()), dynamicReq);
-			assertNotNull("No results from resolveDynamic", result);
+			assertThat(result).as("No results from resolveDynamic").isNotNull();
 			List<Wire> dynamicWires = result.get(dynamicReq.getResource());
-			assertNotNull("No dynamic wires found.", dynamicWires);
-			assertEquals("Wrong number of dynamic wires found.", 1,
-					dynamicWires.size());
+			assertThat(dynamicWires).as("No dynamic wires found.").isNotNull();
+			assertThat(dynamicWires).as("Wrong number of dynamic wires found.").hasSize(1);
 		} catch (ResolutionException e) {
 			fail("Unexpected error.", e);
 		}
@@ -212,13 +218,8 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 	private void shouldNotDynamicResolve(TestResolveContext context,
 			Map<Resource,Wiring> wirings, Requirement dynamicReq) {
 		Resolver resolver = getResolverService();
-		try {
-			resolver.resolveDynamic(context,
-					wirings.get(dynamicReq.getResource()), dynamicReq);
-			fail("Expected a ResolutionException for failed resolveDynamic.");
-		} catch (ResolutionException e) {
-			// expected
-		}
+		assertThatExceptionOfType(ResolutionException.class).as("Expected a ResolutionException for failed resolveDynamic.")
+				.isThrownBy(() -> resolver.resolveDynamic(context, wirings.get(dynamicReq.getResource()), dynamicReq));
 	}
 
 	private Requirement addDynamicImport(TestResource resource,

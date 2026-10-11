@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -56,6 +57,7 @@ public class ResolveSubstitutionWiresTestCase extends AbstractResolverTestCase {
 		}
 	}
 
+	@Test
 	public void testSubstitutionWiringsWithSubstitute() {
 		SubstitutionResolveContext rc = createResolveContext(true, true);
 		shouldResolve(rc);
@@ -63,6 +65,7 @@ public class ResolveSubstitutionWiresTestCase extends AbstractResolverTestCase {
 				rc.checkForSubstitutions.toArray(new Wiring[0]));
 	}
 
+	@Test
 	public void testSubstitutionWiringsWithNoSubstitute() {
 		SubstitutionResolveContext rc = createResolveContext(false, true);
 		shouldResolve(rc);
@@ -70,6 +73,7 @@ public class ResolveSubstitutionWiresTestCase extends AbstractResolverTestCase {
 				rc.checkForSubstitutions.toArray(new Wiring[0]));
 	}
 
+	@Test
 	public void testSubstitutionNoWiringsWithSubstitute() {
 		SubstitutionResolveContext rc = createResolveContext(true, false);
 		shouldResolve(rc);
@@ -77,6 +81,7 @@ public class ResolveSubstitutionWiresTestCase extends AbstractResolverTestCase {
 				rc.checkForSubstitutions.toArray(new Wiring[0]));
 	}
 
+	@Test
 	public void testSubstitutionNoWiringsWithNoSubstitute() {
 		SubstitutionResolveContext rc = createResolveContext(false, false);
 		shouldResolve(rc);

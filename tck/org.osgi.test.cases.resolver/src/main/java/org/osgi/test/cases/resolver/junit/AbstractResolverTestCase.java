@@ -17,6 +17,9 @@
  *******************************************************************************/
 package org.osgi.test.cases.resolver.junit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,8 +35,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -48,18 +53,31 @@ import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.ResolveContext;
 import org.osgi.service.resolver.Resolver;
-import org.osgi.test.support.compatibility.DefaultTestBundleControl;
+import org.osgi.test.common.annotation.InjectBundleContext;
+import org.osgi.test.common.annotation.InjectBundleInstaller;
+import org.osgi.test.common.install.BundleInstaller;
 
 /**
  * @author <a href="mailto:rellermeyer@us.ibm.com">Jan S. Rellermeyer</a>
  */
-public abstract class AbstractResolverTestCase extends DefaultTestBundleControl {
+public abstract class AbstractResolverTestCase {
+
+	@InjectBundleContext
+	BundleContext		context;
+
+	@InjectBundleInstaller
+	BundleInstaller		installer;
 
 	protected static final String TEST_NAMESPACE = "org.osgi.test.cases.resolver";
 
 	protected Resolver getResolverService() {
-		final Resolver res = getService(Resolver.class);
-		assertNotNull(res);
+		ServiceReference<Resolver> ref = context
+				.getServiceReference(Resolver.class);
+		assertThat(ref)
+				.as("Can't get service reference for " + Resolver.class.getName())
+				.isNotNull();
+		final Resolver res = context.getService(ref);
+		assertThat(res).isNotNull();
 		return res;
 	}
 
@@ -68,7 +86,7 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 		final Resolver resolver = getResolverService();
 		try {
 			final Map<Resource, List<Wire>> result = resolver.resolve(context);
-			assertNotNull(result);
+			assertThat(result).isNotNull();
 			context.checkMandatoryResources(result);
 			return result;
 		} catch (final ResolutionException re) {
@@ -81,7 +99,7 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 		final Resolver resolver = getResolverService();
 		try {
 			final Map<Resource, List<Wire>> result = resolver.resolve(context);
-			assertNotNull(result);
+			assertThat(result).isNotNull();
 			return result;
 		} catch (final ResolutionException re) {
 			fail(re.getMessage());
@@ -97,7 +115,7 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 		} catch (final ResolutionException re) {
 			return re;
 		}
-		fail();
+		fail("");
 		return null;
 	}
 
@@ -118,7 +136,7 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 			final String[] pairs = attributes.split(",");
 			for (int i = 0; i < pairs.length; i++) {
 				final String[] tokens = pairs[i].split("=");
-				assertTrue(tokens.length == 2);
+				assertThat(tokens).hasSize(2);
 				attributeMap.put(tokens[0], tokens[1]);
 			}
 
@@ -449,7 +467,7 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 					resolution);
 			final Set<Resource> set = new HashSet<Resource>(mandatoryResources);
 			for (final Resource resource : set) {
-				assertNotNull(res.remove(resource));
+				assertThat(res.remove(resource)).isNotNull();
 			}
 		}
 
@@ -460,14 +478,14 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 		 */
 		protected void checkFindProviderCalls(final Requirement... reqs) {
 			for (final Requirement req : reqs) {
-				assertTrue(callbackMemory.remove(req));
+				assertThat(callbackMemory.remove(req)).isTrue();
 			}
-			assertTrue(callbackMemory.isEmpty());
+			assertThat(callbackMemory).isEmpty();
 		}
 
 		protected void checkGetSubstitutionWires(final Wiring... wirings) {
 			for (Wiring wiring : wirings) {
-				assertTrue(callGetSubstitutionWires.remove(wiring));
+				assertThat(callGetSubstitutionWires.remove(wiring)).isTrue();
 			}
 			// Don't assert that the set is drained because it should be
 			// allowed to call this method for all wirings.
@@ -475,14 +493,14 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 		}
 
 		protected void checkInsertHostedCapabilityCalled() {
-			assertTrue(insertHostedCapabilityCalled);
+			assertThat(insertHostedCapabilityCalled).isTrue();
 		}
 
 		protected void checkEmptyWires(final Map<Resource,List<Wire>> result,
 				Resource resource) {
 			List<Wire> wires = result.get(resource);
-			assertNotNull("No wires found.", wires);
-			assertTrue("Wires are not empty.", wires.isEmpty());
+			assertThat(wires).as("No wires found.").isNotNull();
+			assertThat(wires).as("Wires are not empty.").isEmpty();
 		}
 
 		protected void checkWires(final Map<Resource, List<Wire>> result,
@@ -493,7 +511,7 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 			outerLoop: for (final TestWire test : toTest) {
 				requirers.add(test.getRequirer());
 				final List<Wire> wires = copy.get(test.getRequirer());
-				assertNotNull(wires);
+				assertThat(wires).isNotNull();
 				for (final Wire wire : wires) {
 					if (test.equals(wire)) {
 						wires.remove(wire);
@@ -508,7 +526,7 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 			// check that there are no other wires from the mandatory requirers
 			for (final Resource requirer : requirers) {
 				final List<Wire> wires = copy.get(requirer);
-				assertTrue(wires == null || wires.isEmpty());
+				assertThat(wires == null || wires.isEmpty()).isTrue();
 			}
 		}
 
@@ -648,10 +666,8 @@ public abstract class AbstractResolverTestCase extends DefaultTestBundleControl 
 		}
 
 		void checkOnCancelCalled() {
-			assertEquals("Wrong method called first.",
-					ResolveContextMethod.onCancel, firstCalled.get());
-			assertEquals("The onCancel method was called more than once.", 1,
-					onCancel.size());
+			assertThat(firstCalled.get()).as("Wrong method called first.").isEqualTo(ResolveContextMethod.onCancel);
+			assertThat(onCancel).as("The onCancel method was called more than once.").hasSize(1);
 		}
 	};
 

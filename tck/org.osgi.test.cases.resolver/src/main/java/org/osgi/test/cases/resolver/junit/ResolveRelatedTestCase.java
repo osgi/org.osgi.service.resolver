@@ -17,12 +17,15 @@
  *******************************************************************************/
 package org.osgi.test.cases.resolver.junit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -42,6 +45,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Simple test that pulls in on additional non-fragment resource. Should
 	 * result in two resources resolved with no wired.
 	 */
+	@Test
 	public void testRelatedNonFragment() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource = new TestResource();
@@ -50,7 +54,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource,
 				Collections.<Resource> singleton(rootRelatedResource));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 2, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(2);
 		context.checkEmptyWires(result, rootResource);
 		context.checkEmptyWires(result, rootRelatedResource);
 	}
@@ -59,6 +63,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Tests that if a related resource is unresolvable then the resource that
 	 * pulls the related resource in is still able to resolve
 	 */
+	@Test
 	public void testRelatedNonFragmentUnresolvable() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource = new TestResource();
@@ -69,7 +74,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource,
 				Collections.<Resource> singleton(rootRelatedResource));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 1, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(1);
 		context.checkEmptyWires(result, rootResource);
 	}
 
@@ -77,6 +82,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Tests that if a related resource is resolvable and requires additional
 	 * resources to resolve then these resources also get resolved.
 	 */
+	@Test
 	public void testRelatedNonFragmentResolvable() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource = new TestResource();
@@ -94,7 +100,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 				Collections.<Resource> singleton(rootRelatedResource));
 
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 3, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(3);
 		context.checkEmptyWires(result, rootResource);
 		context.checkEmptyWires(result, providerResource);
 		context.checkWires(result, new TestWire(rootRelatedResource,
@@ -106,6 +112,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * resolved then the non-fragment resource has no impact on the end
 	 * resolution result
 	 */
+	@Test
 	public void testRelatedNonFragmentAlreadyResolved() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource = new TestResource();
@@ -117,13 +124,14 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource,
 				Collections.<Resource> singleton(rootRelatedResource));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 1, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(1);
 		context.checkEmptyWires(result, rootResource);
 	}
 
 	/*
 	 * Simple test for pulling in a related fragment resource
 	 */
+	@Test
 	public void testRelatedFragment() {
 		TestResource rootResource = new TestResource();
 		rootResource.addIdentity("host", null, null);
@@ -140,7 +148,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource,
 				Collections.<Resource> singleton(rootResourceFrag));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 2, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(2);
 		context.checkEmptyWires(result, rootResource);
 		context.checkWires(result,
 				new TestWire(rootResourceFrag, hostReq, rootResource,
@@ -155,6 +163,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * resource host that pulls the related resource fragment in is still able
 	 * to resolve
 	 */
+	@Test
 	public void testRelatedFragmentUnresolvable() {
 		TestResource rootResource = new TestResource();
 		rootResource.addIdentity("host", null, null);
@@ -170,7 +179,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource,
 				Collections.<Resource> singleton(rootResourceFrag));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 1, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(1);
 		context.checkEmptyWires(result, rootResource);
 	}
 
@@ -178,6 +187,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Tests that if a related resource fragment is resolvable and requires
 	 * additional resources to resolve then these resources also get resolved.
 	 */
+	@Test
 	public void testRelatedFragmentResolvable() {
 		TestResource rootResource = new TestResource();
 		rootResource.addIdentity("host", null, null);
@@ -202,7 +212,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 				Collections.<Resource> singleton(rootResourceFrag));
 
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 3, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(3);
 		context.checkWires(result, new TestWire(rootResource, resolvableReq,
 				providerResource, resolvableCap));
 		context.checkEmptyWires(result, providerResource);
@@ -218,6 +228,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * resolved then the fragment is allowed to establish a new host wire to an
 	 * unresolved host
 	 */
+	@Test
 	public void testRelatedFragmentAlreadyResolved() {
 		TestResource rootResource10 = new TestResource();
 		rootResource10.addIdentity("host", new Version(1, 0, 0), null);
@@ -252,7 +263,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource11,
 				Collections.<Resource> singleton(rootResourceFrag));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 2, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(2);
 		context.checkEmptyWires(result, rootResource11);
 		context.checkWires(result,
 				new TestWire(rootResourceFrag, hostReq, rootResource11,
@@ -265,6 +276,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Test that a related resource with related resources resolves the
 	 * secondary related resources
 	 */
+	@Test
 	public void testRelatedWithRelated() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource1 = new TestResource();
@@ -276,7 +288,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootRelatedResource1,
 				Collections.<Resource> singleton(rootRelatedResource2));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 3, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(3);
 		context.checkEmptyWires(result, rootResource);
 		context.checkEmptyWires(result, rootRelatedResource1);
 		context.checkEmptyWires(result, rootRelatedResource2);
@@ -287,6 +299,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * unresolvable then the related resource that pulls the unresolvable
 	 * related resource in is still able to resolve
 	 */
+	@Test
 	public void testRelatedWithUnresolvableRelated() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource1 = new TestResource();
@@ -300,7 +313,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootRelatedResource1,
 				Collections.<Resource> singleton(rootRelatedResource2));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 2, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(2);
 		context.checkEmptyWires(result, rootResource);
 		context.checkEmptyWires(result, rootRelatedResource1);
 	}
@@ -309,6 +322,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Tests that a mandatory resource that is also pulled in as a related
 	 * resource resolves fine.
 	 */
+	@Test
 	public void testRelatedAndMandatoryResource() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource = new TestResource();
@@ -318,7 +332,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource,
 				Collections.<Resource> singleton(rootRelatedResource));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 2, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(2);
 		context.checkEmptyWires(result, rootResource);
 		context.checkEmptyWires(result, rootRelatedResource);
 	}
@@ -327,6 +341,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Tests that a mandatory resource that is also pulled in as a related
 	 * resource but is unresolvable causes a resolution exception.
 	 */
+	@Test
 	public void testRelatedAndMandatoryResourceUnresolvable() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource = new TestResource();
@@ -344,6 +359,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 	 * Tests that a optional resource that is also pulled in as a related
 	 * resource but is unresolvable does not cause exception.
 	 */
+	@Test
 	public void testRelatedAndOptionalResourceUnresolvable() {
 		TestResource rootResource = new TestResource();
 		TestResource rootRelatedResource = new TestResource();
@@ -356,7 +372,7 @@ public class ResolveRelatedTestCase extends AbstractResolverTestCase {
 		context.relatedResources.put(rootResource,
 				Collections.<Resource> singleton(rootRelatedResource));
 		Map<Resource,List<Wire>> result = shouldResolve(context);
-		assertEquals("Wrong number of resolved resoruces.", 1, result.size());
+		assertThat(result).as("Wrong number of resolved resoruces.").hasSize(1);
 		context.checkEmptyWires(result, rootResource);
 	}
 }

@@ -17,6 +17,9 @@
  *******************************************************************************/
 package org.osgi.test.cases.resolver.junit;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +27,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceRegistration;
@@ -52,12 +59,14 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 	final Pattern										FILTER_ASSERT_MATCHER	= Pattern
 																						.compile("\\(([^&\\!|=<>~\\(\\)]*)[=|<=|>=|~=]");
 
-	protected void setUp() throws Exception {
-		resolverHookRegistration = getContext().registerService(
+	@BeforeEach
+	public void setUp() throws Exception {
+		resolverHookRegistration = context.registerService(
 				ResolverHookFactory.class, new Factory(), null);
 	}
 
-	protected void tearDown() throws Exception {
+	@AfterEach
+	public void tearDown() throws Exception {
 		resolverHookRegistration.unregister();
 		resolverHookRegistration = null;
 		if (rc != null) {
@@ -66,6 +75,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		}
 	}
 
+	@Test
 	public void testDynamicImport0() throws Exception {
 		final FrameworkTestResolveContext fwtrc = new FrameworkTestResolveContext(
 				"classloading.tb17a.jar");
@@ -73,6 +83,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		shouldResolve(fwtrc);
 	}
 
+	@Test
 	public void testDynamicImport1() throws Exception {
 		rc = new FrameworkTestResolveContext(
 				true, "dynpkgimport.tlx.jar",
@@ -84,6 +95,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 				result);
 	}
 
+	@Test
 	public void testDynamicImport7() throws Exception {
 		rc = new FrameworkTestResolveContext("classloading.tb1.jar",
 				"classloading.tb17d.jar");
@@ -91,6 +103,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		shouldResolve(rc);
 	}
 
+	@Test
 	public void testDynamicImport9() throws Exception {
 		rc = new FrameworkTestResolveContext("classloading.tb13g.jar",
 				"classloading.tb17g.jar");
@@ -98,12 +111,14 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		shouldResolve(rc);
 	}
 
+	@Test
 	public void testRequireBundle0() throws Exception {
 		rc = new FrameworkTestResolveContext("classloading.tb16c.jar");
 
 		shouldNotResolve(rc);
 	}
 
+	@Test
 	public void testRequireBundle1() throws Exception {
 		rc = new FrameworkTestResolveContext("classloading.tb16a.jar",
 				"classloading.tb16b.jar", "classloading.tb16c.jar");
@@ -117,6 +132,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 				result);
 	}
 
+	@Test
 	public void testRequireBundle2() throws Exception {
 		rc = new FrameworkTestResolveContext("classloading.tb16b.jar",
 				"classloading.tb16k.jar", "classloading.tb16i.jar");
@@ -124,18 +140,21 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		shouldResolve(rc);
 	}
 
+	@Test
 	public void testFragment1() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb1a.jar");
 
 		shouldResolve(rc);
 	}
 
+	@Test
 	public void testFragment2() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb1b.jar");
 
 		shouldNotResolve(rc);
 	}
 
+	@Test
 	public void testFragment3() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb1a.jar",
 				"fragments.tb1b.jar");
@@ -144,6 +163,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		rc.shouldBeWiredTo("fragments.tb1b.jar", "fragments.tb1a.jar", result);
 	}
 
+	@Test
 	public void testFragment4() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb1a.jar",
 				"fragments.tb1b.jar", "fragments.tb1d.jar");
@@ -151,6 +171,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		shouldNotResolve(rc);
 	}
 
+	@Test
 	public void testFragment5() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb1a.jar",
 				"fragments.tb1b.jar", "fragments.tb1g.jar");
@@ -160,6 +181,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		rc.shouldBeWiredTo("fragments.tb1g.jar", "fragments.tb1a.jar", result);
 	}
 
+	@Test
 	public void testFragment6() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb3a.jar",
 				"fragments.tb3d.jar");
@@ -168,6 +190,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		rc.shouldBeWiredTo("fragments.tb3d.jar", "fragments.tb3a.jar", result);
 	}
 
+	@Test
 	public void testFragment7() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb3e.jar",
 				"fragments.tb3d.jar");
@@ -175,6 +198,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		shouldNotResolve(rc);
 	}
 
+	@Test
 	public void testFragment8() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb3f.jar",
 				"fragments.tb3d.jar");
@@ -183,6 +207,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		rc.shouldBeWiredTo("fragments.tb3d.jar", "fragments.tb3f.jar", result);
 	}
 
+	@Test
 	public void testFragment9() throws Exception {
 		rc = new FrameworkTestResolveContext("fragments.tb7e.jar",
 				"fragments.tb7c.jar", "fragments.tb7h.jar");
@@ -193,6 +218,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		rc.checkInsertHostedCapabilityCalled();
 	}
 
+	@Test
 	public void testReqCap0() throws Exception {
 		rc = new FrameworkTestResolveContext("resolver.tb1.v100.jar",
 				"resolver.tb5.jar");
@@ -200,6 +226,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		shouldNotResolve(rc);
 	}
 
+	@Test
 	public void testReqCap1() throws Exception {
 		rc = new FrameworkTestResolveContext("resolver.tb1.v110.jar",
 				"resolver.tb5.jar");
@@ -208,6 +235,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		rc.shouldBeWiredTo("resolver.tb5.jar", "resolver.tb1.v110.jar", result);
 	}
 
+	@Test
 	public void testReqCap2() throws Exception {
 		rc = new FrameworkTestResolveContext("resolver.tb1.v120.jar",
 				"resolver.tb5.jar");
@@ -216,6 +244,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		rc.shouldBeWiredTo("resolver.tb5.jar", "resolver.tb1.v120.jar", result);
 	}
 
+	@Test
 	public void testUses0() throws Exception {
 		rc = new FrameworkTestResolveContext("classloading.tb9a.jar",
 				"classloading.tb8b.jar", "classloading.tb13b.jar",
@@ -229,6 +258,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 				result);
 	}
 
+	@Test
 	public void testUses1() throws Exception {
 		rc = new FrameworkTestResolveContext("requirebundleB.jar", "requirebundleC.jar",
 				"requirebundleD.jar", "requirebundleE.jar");
@@ -286,12 +316,12 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 					bundleFileNames.length);
 
 			for (final String bundleFileName : bundleFileNames) {
-				final Bundle bundle = installBundle(bundleFileName, false);
+				final Bundle bundle = installer.installBundle(bundleFileName, false);
 				resourceMap.put(bundleFileName,
 						bundle.adapt(BundleRevision.class));
 			}
 
-			systemBundle = getContext().getBundle(0)
+			systemBundle = context.getBundle(0)
 					.adapt(BundleRevision.class);
 
 			mandatoryResources.addAll(resourceMap.values());
@@ -299,7 +329,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 			allResources.add(systemBundle);
 
 			if (withDummy) {
-				final Bundle dummyBundle = installBundle("tb1.jar", false);
+				final Bundle dummyBundle = installer.installBundle("tb1.jar", false);
 				allResources.add(dummyBundle.adapt(BundleRevision.class));
 			}
 		}
@@ -321,12 +351,12 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 		protected void shouldBeWiredTo(final String b1, final String b2,
 				final Map<Resource, List<Wire>> resolution) {
 			final BundleRevision bundle1 = resourceMap.get(b1);
-			assertNotNull(bundle1);
+			assertThat(bundle1).isNotNull();
 			final BundleRevision bundle2 = resourceMap.get(b2);
-			assertNotNull(bundle2);
+			assertThat(bundle2).isNotNull();
 
 			final List<Wire> wires = resolution.get(bundle1);
-			assertNotNull(wires);
+			assertThat(wires).isNotNull();
 
 			for (final Wire wire : wires) {
 				if (wire.getProvider().equals(bundle2)) {
@@ -334,7 +364,7 @@ public class ResolverFrameworkTestCase extends AbstractResolverTestCase {
 				}
 			}
 
-			fail();
+			fail("");
 		}
 
 		@Override
