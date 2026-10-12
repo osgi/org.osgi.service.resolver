@@ -100,7 +100,7 @@ public class ResolveDynamicTestCase extends AbstractResolverTestCase {
 		List<Wire> fooProviderWires = result.get(fooProvider);
 		assertThat(fooProviderWires).as("No provider wires.").isNotNull();
 		// there are no reqs so should be empty wires
-		assertThat(fooProviderWires).as("Wrong number of wires.").hasSize(0);
+		assertThat(fooProviderWires).as("Wrong number of wires.").isEmpty();
 	}
 
 	/*
