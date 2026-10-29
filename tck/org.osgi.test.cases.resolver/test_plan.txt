@@ -253,3 +253,9 @@ II) Verify the resolver in the osgi namespace by using framework test bundles an
 	
 III) SignatureTestCase.java
 	
+
+IV) Verify the Java Service Provider configuration (ResolverServiceLoaderTestCase.java)
+
+	1. verify that the bundle providing the Resolver service contains META-INF/services/org.osgi.service.resolver.Resolver
+		a. verify that the resource lists at least one implementation class
+		b. verify that each listed class implements Resolver, is public and has a public no-argument constructor
