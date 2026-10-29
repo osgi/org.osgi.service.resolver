@@ -1426,6 +1426,49 @@ public List&lt;Capability&gt; findProviders( Requirement requirement) {
     </section>
   </section>
 
+  <section>
+    <title>Diagnostics</title>
+
+    <para>A <xref linkend="org.osgi.service.resolver.ResolutionException"
+    xrefstyle="hyperlink"/> only lists requirements that could not be
+    satisfied, and a successful resolution only returns wires. Neither
+    explains <emphasis>why</emphasis> a resolver decided as it did, for example
+    why a provider was chosen over another one, why a requirement was dropped
+    or which uses constraint made a resource fail. Finding out requires
+    detailed knowledge of the resolver algorithm.</para>
+
+    <para>Resolvers can therefore optionally explain their decisions. A
+    Resolve Context that wants to receive these explanations implements the
+    <xref linkend="org.osgi.service.resolver.diagnostics.DiagnosticsListener"
+    xrefstyle="hyperlink"/> interface in addition to extending
+    <code>ResolveContext</code>. A resolver that supports diagnostics must
+    then call <xref
+    linkend="org.osgi.service.resolver.diagnostics.DiagnosticsListener.publishDiagnostic-Diagnostics-"
+    xrefstyle="hyperlink"/> once per resolve operation, for successful as well
+    as for failed operations. A resolver that does not support diagnostics
+    never calls it. Neither side is forced to implement anything
+    from it.</para>
+
+    <para>The <xref linkend="org.osgi.service.resolver.diagnostics.Diagnostics"
+    xrefstyle="hyperlink"/> object is queried for a message about a resource, a
+    requirement or a capability. The owning resource is available from
+    <code>getResource()</code> of the latter two. The messages are
+    human readable text. Their format is not specified, and an empty result
+    means that the resolver has nothing to say about the element.</para>
+
+    <programlisting>class MyContext extends ResolveContext implements DiagnosticsListener {
+  public void publishDiagnostic(Diagnostics diagnostics) {
+    diagnostics.getMessage(requirement)
+        .ifPresent(System.out::println);
+  }
+  // ... other ResolveContext methods
+}</programlisting>
+
+    <para>The API lives in its own package
+    <code>org.osgi.service.resolver.diagnostics</code>, so it is only needed
+    by bundles that use it.</para>
+  </section>
+
   <section xml:id="i3331809">
     <title>Security</title>
 
@@ -1463,6 +1506,8 @@ ServicePermission[...Resolver, GET ]
   </section>
 
   <xi:include href="../../../generated/javadoc/docbook/org.osgi.service.resolver.xml"/>
+
+  <xi:include href="../../../generated/javadoc/docbook/org.osgi.service.resolver.diagnostics.xml"/>
 
   <section>
     <title>References</title>
