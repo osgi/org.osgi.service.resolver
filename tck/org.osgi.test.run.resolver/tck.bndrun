@@ -29,6 +29,11 @@
 tck.range: ${range;[===,==+);${version_cleanup;${1}}}
 
 -runrequires: \
+	bnd.identity;id='org.osgi.util.pushstream',\
+	bnd.identity;id='org.osgi.util.promise',\
+	bnd.identity;id='org.osgi.util.function',\
+	bnd.identity;id='org.osgi.service.log';version='1.4.0',\
+	bnd.identity;id='org.osgi.service.resolver';version='${tck.range;${revision}}',\
 	bnd.identity;id='org.osgi.test.cases.resolver';version='${tck.range;${revision}}',\
 	bnd.identity;id='assertj-core';version='${tck.range;${assertj.version}}',\
 	bnd.identity;id='junit-jupiter-api';version='${tck.range;${junit-jupiter.version}}',\
@@ -55,7 +60,12 @@ tck.range: ${range;[===,==+);${version_cleanup;${1}}}
 	junit-platform-launcher;version='${tck.range;${junit-platform.version}}',\
 	net.bytebuddy.byte-buddy;version='${tck.range;${byte-buddy.version}}',\
 	org.opentest4j;version='${tck.range;${opentest4j.version}}',\
+	org.osgi.service.log;version='[1.4.0,1.4.1)',\
+	org.osgi.service.resolver;version='${tck.range;${revision}}',\
 	org.osgi.test.assertj.framework;version='${tck.range;${osgi-test.version}}',\
 	org.osgi.test.cases.resolver;version='${tck.range;${revision}}',\
 	org.osgi.test.common;version='${tck.range;${osgi-test.version}}',\
-	org.osgi.test.junit5;version='${tck.range;${osgi-test.version}}'
+	org.osgi.test.junit5;version='${tck.range;${osgi-test.version}}',\
+	org.osgi.util.function;version='[1.2.0,1.2.1)',\
+	org.osgi.util.promise;version='[1.3.0,1.3.1)',\
+	org.osgi.util.pushstream;version='[1.0.2,1.0.3)'

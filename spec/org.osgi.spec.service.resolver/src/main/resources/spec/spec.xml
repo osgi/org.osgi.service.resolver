@@ -107,6 +107,12 @@
         </listitem>
 
         <listitem>
+          <para><emphasis>Visibility</emphasis> - Allow resolve contexts to
+          receive logging information about the resolution process to aid
+          debugging and diagnostics.</para>
+        </listitem>
+
+        <listitem>
           <para><emphasis>Scoped Repositories</emphasis> - Allow the
           environment to control the repositories to use.</para>
         </listitem>
@@ -733,6 +739,78 @@ public List&lt;Capability&gt; findProviders( Requirement requirement) {
       from <code>isEffective</code> for such requirements. This allows build and 
       provisioning tools to perform custom resolution operations beyond the OSGi 
       Framework's standard resolve behavior.</para>
+    </section>
+
+    <section>
+      <title>Logging</title>
+
+      <para>A resolve operation can be complex and time-consuming. To give
+      visibility into what the resolver is doing, the <xref
+      linkend="org.osgi.service.resolver.ResolveContext"
+      xrefstyle="hyperlink"/> provides the <xref
+      linkend="org.osgi.service.resolver.ResolveContext.getLogger--"
+      xrefstyle="hyperlink"/> method, which returns an
+      <code>Optional&lt;FormatterLogger&gt;</code>. The
+      <code>FormatterLogger</code> is defined by the Log Service
+      specification. It is used instead of a plain <code>Logger</code>
+      because its <code>printf</code>-style format strings
+      (<code>java.util.Formatter</code>) need no logging framework to
+      implement.</para>
+
+      <para>The default implementation returns an empty
+      <code>Optional</code>, so existing resolve contexts are not affected. A
+      resolve context that wants to receive log messages overrides this method.
+      The resolver is not required to call the method or to use the logger, but
+      is encouraged to log meaningful information, such as the progress of the
+      resolution, how requirements are matched to capabilities, and why
+      resolution paths are rejected. The levels should be used as follows:
+      <code>TRACE</code> for detailed steps, <code>DEBUG</code> for general
+      progress, <code>INFO</code> for significant milestones and
+      <code>WARN</code> for issues that do not prevent the resolution.</para>
+
+      <para>The resolve context must return the same logger for the duration of
+      a resolve operation, and the logger must be thread-safe because the
+      resolver can use multiple threads.</para>
+
+      <para>The following example shows a resolve context that provides a
+      logger:</para>
+
+      <programlisting>public class MyResolveContext extends ResolveContext {
+  private final FormatterLogger logger;
+
+  public MyResolveContext(LoggerFactory loggerFactory) {
+    this.logger = loggerFactory.getLogger(MyResolveContext.class,
+        FormatterLogger.class);
+  }
+
+  @Override
+  public Optional&lt;FormatterLogger&gt; getLogger() {
+    return Optional.of(logger);
+  }
+
+  // ... other ResolveContext methods
+}</programlisting>
+
+      <section>
+        <title>Import Range Considerations</title>
+
+        <para>The resolver and the resolve context must use the same
+        <code>org.osgi.service.log</code> package. A resolve context that only
+        obtains loggers from a <code>LoggerFactory</code> is a consumer of the
+        package and can use the consumer import range:</para>
+
+        <programlisting>Import-Package: org.osgi.service.log; version="[1.4,2.0)"</programlisting>
+
+        <para>A resolve context that supplies its own
+        <code>FormatterLogger</code> implementation is a provider of the
+        package and must use the provider import range:</para>
+
+        <programlisting>Import-Package: org.osgi.service.log; version="[1.4,1.5)"</programlisting>
+
+        <para>Outside OSGi, the logger API of the resolver and of the resolve
+        context must come from the same class space, for example by using the
+        same version on the class path.</para>
+      </section>
     </section>
 
     <section xml:id="i3344346">
