@@ -143,6 +143,12 @@
         </listitem>
 
         <listitem>
+          <para><emphasis>Standalone Access</emphasis> - Allow obtaining
+          resolver instances outside OSGi frameworks using the standard Java
+          Service Provider mechanism.</para>
+        </listitem>
+
+        <listitem>
           <para><emphasis>Scalable</emphasis> - Allow access to, and use of,
           very large repositories.</para>
         </listitem>
@@ -1424,6 +1430,57 @@ public List&lt;Capability&gt; findProviders( Requirement requirement) {
       xrefstyle="hyperlink"/> is intended for human consumption and not for
       automated solutions.</para>
     </section>
+  </section>
+
+  <section>
+    <title>Java Service Provider Configuration Support for Resolvers</title>
+
+    <para>While the <xref linkend="org.osgi.service.resolver.Resolver"
+    xrefstyle="hyperlink"/> service is typically obtained from the OSGi
+    service registry when running within an OSGi framework, a resolver is also
+    needed outside an OSGi runtime, for example:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis>Build Tools</emphasis> - Tools such as Maven, Gradle,
+        or bnd resolve project dependencies at build time, often modeling
+        non-OSGi artifacts as resources with requirements and
+        capabilities.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Development Tools</emphasis> - IDEs analyze bundle
+        dependencies and predict resolution outcomes without running a
+        framework.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Management Agents</emphasis> - Agents that provision
+        bundles from repositories need resolution capabilities but do not run
+        within OSGi.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Referencing a specific implementation class couples the caller to
+    that implementation. Therefore, a resolver implementation must be
+    discoverable with the Java Service Provider mechanism. The implementation
+    class name is obtained from the content of the configuration resource
+    <code>META-INF/services/org.osgi.service.resolver.Resolver</code>. The
+    implementation class must have a public, no-argument constructor.</para>
+
+    <para>For example, if the <code>com.acme.osgi</code> package contains the
+    resolver implementation class <code>com.acme.osgi.ResolverImpl</code>,
+    the resource <code>META-INF/services/org.osgi.service.resolver.Resolver</code>
+    must have the following content:</para>
+
+    <programlisting># ACME Resolver Implementation
+com.acme.osgi.ResolverImpl</programlisting>
+
+    <para>A caller can then obtain the resolver without OSGi:</para>
+
+    <programlisting>Resolver resolver = ServiceLoader.load(Resolver.class)
+    .findFirst()
+    .orElseThrow();</programlisting>
   </section>
 
   <section xml:id="i3331809">
