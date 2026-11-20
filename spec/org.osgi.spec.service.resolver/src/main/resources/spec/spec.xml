@@ -146,6 +146,12 @@
           <para><emphasis>Scalable</emphasis> - Allow access to, and use of,
           very large repositories.</para>
         </listitem>
+
+        <listitem>
+          <para><emphasis>Interchange</emphasis> - Provide an optional XML
+          format to record the outcome of a resolve operation so it can be
+          compared, validated, and reused.</para>
+        </listitem>
       </itemizedlist>
     </section>
 
@@ -1424,6 +1430,586 @@ public List&lt;Capability&gt; findProviders( Requirement requirement) {
       xrefstyle="hyperlink"/> is intended for human consumption and not for
       automated solutions.</para>
     </section>
+  </section>
+
+  <section xml:id="service.resolver.wiring.xml">
+    <title>XML Wiring Format</title>
+
+    <para>This is an optional part of the specification. The Resolver service
+    returns the outcome of a resolve operation as a <code>Map&lt;Resource,
+    List&lt;Wire&gt;&gt;</code> but does not define how this outcome can be
+    stored or exchanged. The purpose of this part of the specification is to
+    provide a commonly recognized format to record such an outcome. It is
+    modelled after the XML Repository Format, see <xref
+    linkend="service.resolver-ref.service.repository"/>, so a wiring can be
+    stored next to the repository it was resolved from and tools that handle
+    one format can easily handle the other.</para>
+
+    <para>A recorded wiring can be used to:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis>Compare</emphasis> - keep the outcome of a resolve as
+        a reference and compare it with the outcome of another resolver or
+        another version of the same resolver, without resolving again.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Pre-resolve</emphasis> - validate a set of resources
+        that form a product at build time and ship the wiring with it. A
+        framework or launcher can use the recorded wires instead of searching
+        for them again.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Reuse</emphasis> - together with one or more
+        repositories, a wiring describes a resolution that can be validated,
+        explained or updated when a repository changes, because only the
+        resources that changed need to be resolved again.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Snapshot</emphasis> - a framework can export the
+        wiring of its resolved resources so the running system can be
+        reconstructed or analyzed elsewhere.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>A wiring is a record. The Resolver and the Resolve Context remain
+    the authority on what a valid resolution is. A wiring must therefore be
+    validated before it is used instead of a resolve operation, see <xref
+    linkend="service.resolver.wiring.validity"/>. Also, the specification
+    leaves the choice among equally valid candidates to the Resolve Context,
+    so a recorded wiring is a reference for one Resolve Context and one input,
+    not a statement about all valid resolutions.</para>
+
+    <para>The XML Schema can be found at its XML namespace, see <xref
+    linkend="service.resolver.wiring.schema"/>. The XML structure is
+    deliberately flat: the wires of a resource are recorded below that
+    resource, and neither requirements nor capabilities are repeated, they are
+    identified by the attributes that are needed to find them in the
+    resources.</para>
+
+    <section>
+      <title>Wiring Element</title>
+
+      <para>The <code>wiring</code> element is the root of the document. It
+      has the following child elements:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><code>resource*</code> - The resources of the resolve
+          operation, see <xref linkend="service.resolver.wiring.resource"/>.
+          </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The <code>wiring</code> element has the attributes defined in the
+      following table. All attributes are informational and must not
+      influence the comparison of two wirings.</para>
+
+      <table>
+        <title>wiring element attributes</title>
+
+        <tgroup cols="3">
+          <colspec colnum="1" colwidth="1.5*"/>
+
+          <colspec colnum="2" colwidth="1*"/>
+
+          <colspec colnum="3" colwidth="4*"/>
+
+          <thead>
+            <row>
+              <entry>Attribute</entry>
+
+              <entry>Type</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><code>name</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>A free name of the wiring, for example the
+              scenario it belongs to.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>repository</code></entry>
+
+              <entry><code>anyURI</code></entry>
+
+              <entry><para>The Repository XML, see <xref
+              linkend="service.resolver-ref.service.repository"/>, the wiring
+              was resolved against. A relative URI is resolved against the
+              location of the wiring document. The resources of the wiring
+              are identified by their key, not by this
+              reference.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>resolver</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>The name of the resolver that produced the
+              wiring.</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section xml:id="service.resolver.wiring.resource">
+      <title>Resource Element</title>
+
+      <para>The <code>resource</code> element represents one resource of the
+      input of a resolve operation. A resource that is resolved contains the
+      wires that satisfy its requirements. If it has no wires the element is
+      empty. A resource that was already resolved before the resolve operation
+      and is wired to, for example the system bundle, is also a resolved
+      resource of the wiring so that it can be validated, see <xref
+      linkend="service.resolver.wiring.validity"/>.</para>
+
+      <para>A resource that is part of the input but is not resolved is
+      recorded with the attribute <code>resolved</code> set to
+      <code>false</code>. It has no wires. Recording it allows a comparison to
+      tell a resource that is not resolved from one that is not part of the
+      input. Why it is not resolved is explained by the optional
+      <code>reason</code> attribute and by <code>requirement</code> child
+      elements that identify the requirements to blame in the same way as a
+      wire does, see <xref linkend="service.resolver.wiring.wire"/>. This is
+      informational only, resolvers explain a failure in very different ways.
+      </para>
+
+      <para>The <code>resource</code> element has the following child
+      elements:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><code>wire*</code> - The wires of the resource, see <xref
+          linkend="service.resolver.wiring.wire"/>.</para>
+        </listitem>
+
+        <listitem>
+          <para><code>requirement*</code> - Only for a resource that is not
+          resolved: a requirement to blame. It has the attributes
+          <code>namespace</code> and <code>filter</code> of a wire and an
+          optional <code>reason</code>.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The <code>resource</code> element has the attributes defined in
+      the following table.</para>
+
+      <table>
+        <title>resource element attributes</title>
+
+        <tgroup cols="3">
+          <colspec colnum="1" colwidth="1.5*"/>
+
+          <colspec colnum="2" colwidth="1*"/>
+
+          <colspec colnum="3" colwidth="4*"/>
+
+          <thead>
+            <row>
+              <entry>Attribute</entry>
+
+              <entry>Type</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><code>key</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>Required. Identifies the resource, see <xref
+              linkend="service.resolver.wiring.key"/>.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>resolved</code></entry>
+
+              <entry><code>boolean</code></entry>
+
+              <entry><para>Whether the resource is resolved. The default is
+              <code>true</code>.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>signature</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>Optional. The signature of the capabilities and
+              requirements of the resource, see <xref
+              linkend="service.resolver.wiring.signature"/>.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>reason</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>Optional. Informational explanation why the
+              resource is not resolved.</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section xml:id="service.resolver.wiring.key">
+      <title>Resource Key</title>
+
+      <para>A resource is identified by a key that is built from its
+      <code>osgi.identity</code> capability, see <xref
+      linkend="framework.wiring"/>:</para>
+
+      <programlisting>key ::= name '@' version ( '#' type )?</programlisting>
+
+      <para>The <code>name</code> is the value of the <code>osgi.identity</code>
+      attribute and the <code>version</code> the value of the
+      <code>version</code> attribute of the identity capability, or
+      <code>0.0.0</code> if it has none. The <code>type</code> is only written
+      if it is not <code>osgi.bundle</code>.</para>
+
+      <para>The key must be unique within the input of the resolve operation.
+      Two resources that agree in identity, version and type are the same
+      resource for the purpose of resolving, a producer must refuse an input
+      where this is not the case. The key is deliberately independent of the
+      location and the content of the resource and of the order in a
+      repository, so it stays stable when a repository is regenerated or
+      edited.</para>
+    </section>
+
+    <section xml:id="service.resolver.wiring.wire">
+      <title>Wire Element</title>
+
+      <para>A <code>wire</code> element connects a requirement of the
+      enclosing resource, the requirer, with a capability of a provider. The
+      requirement and the capability are not referred to by their position in
+      the resource, which would change as soon as the resource is changed.
+      Instead they are identified by their content. The <code>wire</code>
+      element has no child elements and the attributes defined in the following
+      table.</para>
+
+      <table>
+        <title>wire element attributes</title>
+
+        <tgroup cols="3">
+          <colspec colnum="1" colwidth="1.5*"/>
+
+          <colspec colnum="2" colwidth="1*"/>
+
+          <colspec colnum="3" colwidth="4*"/>
+
+          <thead>
+            <row>
+              <entry>Attribute</entry>
+
+              <entry>Type</entry>
+
+              <entry>Description</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry><code>namespace</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>Required. The namespace of the requirement and of
+              the capability.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>filter</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>The value of the <code>filter</code> directive of
+              the requirement. Absent if the requirement has no
+              filter.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>provider</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>Required. The key of the resource that provides the
+              capability, see <xref
+              linkend="service.resolver.wiring.key"/>.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>capability</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>The value of the attribute of the capability that
+              has the name of the namespace, for example the package name for
+              <code>osgi.wiring.package</code>. Absent if the capability has
+              no such attribute.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>version</code></entry>
+
+              <entry><code>string</code></entry>
+
+              <entry><para>The value of the <code>version</code> attribute of
+              the capability or, if it has none, of its
+              <code>bundle-version</code> attribute. Absent if the capability
+              has neither.</para></entry>
+            </row>
+
+            <row>
+              <entry><code>index</code></entry>
+
+              <entry><code>nonNegativeInteger</code></entry>
+
+              <entry><para>The default is <code>0</code>. Only needed if the
+              provider has several capabilities that agree in namespace,
+              <code>capability</code> and <code>version</code>: the position
+              among exactly those capabilities, counted in the order of the
+              capabilities of the resource that declares them.</para></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>A capability that is hosted, see <xref
+      linkend="i3344346"/>, is a capability of the host in a wire: the
+      <code>provider</code> is the host, the resource a resolver reports with
+      the wire. A consumer finds the capability among the capabilities of the
+      host or among those of the fragments that are attached to it by
+      <code>osgi.wiring.host</code> wires of the same wiring. The
+      <code>index</code> then counts among the capabilities of the fragment
+      that declares the capability. The same is true for a requirement of an
+      attached fragment, which is wired from the host.</para>
+
+      <para>Two wires of one resource can be equal, for example when two
+      requirements differ only in directives other than the filter. They are
+      both recorded, a comparison treats the wires of a resource as a
+      multiset.</para>
+    </section>
+
+    <section xml:id="service.resolver.wiring.signature">
+      <title>Signature</title>
+
+      <para>The <code>signature</code> attribute allows a consumer to find out
+      if a resource still offers and needs what it did when it was resolved
+      without comparing every capability and requirement. It is a digest of
+      everything of a resource that has influence on how it resolves: all its
+      capabilities and requirements with their attributes and directives. It
+      does not cover the <code>osgi.content</code> capability, which only says
+      where the bytes of the resource are, and therefore not the content of the
+      resource itself. Two resources with the same signature are equal for the
+      purpose of resolving, whatever their location or class files.</para>
+
+      <para>The signature is computed as follows:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>For every capability of the resource, except those in the
+          <code>osgi.content</code> namespace, and every requirement, a text
+          line is built:</para>
+
+          <programlisting>line       ::= kind ' ' namespace ' ' attributes ' ' directives
+kind       ::= 'capability' | 'requirement'
+attributes ::= '{' ( attribute ( ', ' attribute )* )? '}'
+attribute  ::= name '=' type ':' value
+directives ::= '{' ( directive ( ', ' directive )* )? '}'
+directive  ::= name '=' value</programlisting>
+
+          <para>The attributes and the directives are sorted by name, where
+          names are compared as <code>java.lang.String.compareTo</code>
+          does.</para>
+        </listitem>
+
+        <listitem>
+          <para>The <code>type</code> is one of <code>String</code>,
+          <code>Version</code>, <code>Long</code>, <code>Double</code> or
+          <code>List&lt;</code><emphasis>type</emphasis><code>&gt;</code> where
+          the type of the elements is the type of the first element, or
+          <code>String</code> for an empty list. Integer and floating point
+          numbers of other types are <code>Long</code> and <code>Double</code>.
+          The <code>value</code> is the string form of the value as defined by
+          <code>java.lang.String.valueOf</code>, a <code>Version</code> in its
+          string form, and a list is written as <code>[</code>, the values of
+          the elements separated by <code>, </code> and <code>]</code>.</para>
+        </listitem>
+
+        <listitem>
+          <para>The lines are sorted by <code>java.lang.String.compareTo</code>
+          and lines that are equal are only kept once. Resolvers that read a
+          resource from a repository are free to drop duplicates, so they must
+          not have influence.</para>
+        </listitem>
+
+        <listitem>
+          <para>Every line followed by a line feed is encoded in UTF-8 and the
+          SHA-256 digest of the bytes is written as <code>sha256:</code>
+          followed by 64 lower case hexadecimal digits.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+
+    <section>
+      <title>Canonical Form</title>
+
+      <para>A wiring is easy to compare with ordinary text tools if equal
+      outcomes give equal documents. A writer should therefore:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>write the <code>resource</code> elements sorted by key, resolved
+          and unresolved alike,</para>
+        </listitem>
+
+        <listitem>
+          <para>write the wires of a resource sorted by namespace, filter,
+          provider, capability, version and index, comparing the strings as
+          <code>java.lang.String.compareTo</code> does, so the order does not
+          depend on a locale,</para>
+        </listitem>
+
+        <listitem>
+          <para>omit attributes that have their default value or are absent,
+          and not write anything that differs from run to run, like a time
+          stamp, in attributes that take part in a comparison.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Comparing Wirings</title>
+
+      <para>Two wirings are equal if they have the same resources with the same
+      <code>resolved</code> state and, for each of them, the same wires. The
+      attributes of the <code>wiring</code> element, the <code>reason</code>
+      attributes and the <code>requirement</code> children are ignored as are
+      all elements and attributes of other namespaces. The
+      <code>signature</code> is only compared if both resources have one.</para>
+
+      <para>A comparison should report the resources that are only in one of
+      the wirings and the wires that are only in one of them grouped by the
+      requirer, since this shows which requirement is satisfied
+      differently.</para>
+
+      <para>A difference in the wires is not necessarily an error. The
+      Resolver specification leaves the selection of a capability among
+      several that match to the Resolve Context, for example when two bundles
+      export a package in the same version. Whether a wiring is a valid
+      resolution is therefore better judged by consistency, that is by whether
+      every requirement is satisfied by a matching capability and the class
+      spaces are consistent, than by equality with a reference.</para>
+    </section>
+
+    <section xml:id="service.resolver.wiring.validity">
+      <title>Using a Wiring</title>
+
+      <para>A consumer that wants to use a recorded wiring instead of
+      searching, or to resolve only what has changed, must first validate it
+      against the resources it has. A wiring applies to a set of resources if:
+      </para>
+
+      <orderedlist>
+        <listitem>
+          <para>every resource of the wiring is present, and if the wiring has
+          a <code>signature</code> for it, it has the same signature, so its
+          capabilities and requirements are unchanged, and</para>
+        </listitem>
+
+        <listitem>
+          <para>every wire is still the wire of a requirement of its requirer
+          and points to a provider that is present and to the capability
+          identified in the wire.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>A resource or a wire that does not pass this check is not an error
+      but the part that has to be resolved again. The resources that are new
+      or changed, and the wires to a resource that was removed or changed, are
+      the affected part. The wires of everything else can be kept, except for
+      what a consumer must additionally consider because of the
+      <code>uses</code> constraints that connect the affected part with the
+      rest. A consumer that cannot do this must resolve normally. In no case
+      may a consumer use a wiring that does not pass the check.</para>
+
+      <para>A wiring says nothing about decisions that the Resolve Context
+      takes, like the selection of singletons, that is only valid for the
+      state that the Resolve Context had when the wiring was recorded.</para>
+    </section>
+
+    <section>
+      <title>Sample XML File</title>
+
+      <para>The following example shows a small wiring. It contains a bundle
+      that imports a package of another bundle and requires an execution
+      environment of the system bundle, a fragment that is attached to the
+      bundle and a bundle that could not be resolved.</para>
+
+      <programlisting role="pgwide">&lt;wiring xmlns='http://www.osgi.org/xmlns/wiring/v1.0.0'
+        name='sample' repository='sample.xml'&gt;
+
+  &lt;resource key='org.example.api@1.2.0'
+            signature='sha256:5b3a...e4c1'/&gt;
+
+  &lt;resource key='org.example.broken@1.0.0' resolved='false'&gt;
+    &lt;requirement namespace='osgi.wiring.package'
+        filter='(osgi.wiring.package=org.missing)' reason='no candidate'/&gt;
+  &lt;/resource&gt;
+
+  &lt;resource key='org.example.frag@1.0.0'&gt;
+    &lt;wire namespace='osgi.wiring.host'
+          filter='(osgi.wiring.host=org.example.impl)'
+          provider='org.example.impl@1.0.0'
+          capability='org.example.impl' version='1.0.0'/&gt;
+  &lt;/resource&gt;
+
+  &lt;resource key='org.example.impl@1.0.0'&gt;
+    &lt;wire namespace='osgi.ee'
+          filter='(&amp;amp;(osgi.ee=JavaSE)(version=17))'
+          provider='system.bundle@0.0.0'
+          capability='JavaSE' version='17.0.0'/&gt;
+    &lt;wire namespace='osgi.wiring.package'
+          filter='(&amp;amp;(osgi.wiring.package=org.example.api)(version&amp;gt;=1.0.0)(!(version&amp;gt;=2.0.0)))'
+          provider='org.example.api@1.2.0'
+          capability='org.example.api' version='1.2.0'/&gt;
+  &lt;/resource&gt;
+
+  &lt;resource key='system.bundle@0.0.0'/&gt;
+&lt;/wiring&gt;</programlisting>
+    </section>
+  </section>
+
+  <section xml:id="service.resolver.wiring.schema">
+    <title>XML Wiring Schema</title>
+
+    <para>The namespace of this schema is:</para>
+
+    <programlisting>http://www.osgi.org/xmlns/wiring/v1.0.0</programlisting>
+
+    <para>The schema for this namespace can be found at the location implied
+    in its name. The recommended prefix for this namespace is
+    <code>wir</code>.</para>
+
+    <programlisting role="pgwide"><xi:include encoding="utf-8"
+        href="../../generated/xmlns/wiring/v1.0.0/wiring.xsd"
+        parse="text"/></programlisting>
   </section>
 
   <section xml:id="i3331809">

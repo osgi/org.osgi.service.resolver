@@ -43,6 +43,31 @@
 
 	<build>
 		<plugins>
+			<!-- This chapter prints a schema and includes it from the build
+			     directory. The schema itself is versioned in this repository,
+			     so it is only copied to where the chapter expects it. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-included-schemas</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/generated</outputDirectory>
+							<resources>
+								<resource>
+									<directory>../../xmlns</directory>
+									<targetPath>xmlns</targetPath>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 			<!-- The specification chapter is rendered over the API sources of the
 			     sibling API module(s); they are added as additional source roots. -->
