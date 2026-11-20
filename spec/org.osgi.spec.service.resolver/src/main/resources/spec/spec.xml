@@ -107,6 +107,11 @@
         </listitem>
 
         <listitem>
+          <para><emphasis>Concurrency</emphasis> - Allow the environment to
+          control the threads the resolver uses to do its work.</para>
+        </listitem>
+
+        <listitem>
           <para><emphasis>Scoped Repositories</emphasis> - Allow the
           environment to control the repositories to use.</para>
         </listitem>
@@ -733,6 +738,49 @@ public List&lt;Capability&gt; findProviders( Requirement requirement) {
       from <code>isEffective</code> for such requirements. This allows build and 
       provisioning tools to perform custom resolution operations beyond the OSGi 
       Framework's standard resolve behavior.</para>
+    </section>
+
+    <section>
+      <title>Executor</title>
+
+      <para>Resolving can be computationally expensive and a resolver can
+      spread the work over multiple threads. A caller of the
+      <code>Resolver</code> service can control the threads used for a
+      resolve operation, for example to limit the parallelism, to share the
+      threads of the caller, or to run all work on the calling thread.</para>
+
+      <para>The <xref linkend="org.osgi.service.resolver.ResolveContext"
+      xrefstyle="hyperlink"/> provides the <xref
+      linkend="org.osgi.service.resolver.ResolveContext.getExecutor--"
+      xrefstyle="hyperlink"/> method, which returns an
+      <code>Optional&lt;Executor&gt;</code>. By default a resolve context
+      provides no executor and the resolver decides how to perform the work.
+      A resolve context that wants to control the threads overrides this
+      method. The resolver is not required to call the method or to use the
+      executor, but a resolver that does use it must prefer it to any other
+      executor it has.</para>
+
+      <para>The resolve context must return the same executor for the
+      duration of a resolve operation. The resolver must not assume that
+      submitted tasks run concurrently or on another thread, must not shut the
+      executor down, and must not block threads of the executor while waiting
+      for tasks submitted to it. The following example shows a resolve
+      context that provides an executor:</para>
+
+      <programlisting>public class MyResolveContext extends ResolveContext {
+  private final Executor executor;
+
+  public MyResolveContext(Executor executor) {
+    this.executor = executor;
+  }
+
+  @Override
+  public Optional&lt;Executor&gt; getExecutor() {
+    return Optional.of(executor);
+  }
+
+  // ... other ResolveContext methods
+}</programlisting>
     </section>
 
     <section xml:id="i3344346">
