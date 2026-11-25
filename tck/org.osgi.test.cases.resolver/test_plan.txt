@@ -253,3 +253,14 @@ II) Verify the resolver in the osgi namespace by using framework test bundles an
 	
 III) SignatureTestCase.java
 	
+
+IV) Verify that optional resources never fail a resolve (ResolveOptionalResourcesTestCase.java)
+
+	1. verify that an optional resource that is in conflict with a mandatory resource is left out
+		a. verify that the resolution succeeds without throwing an exception
+		b. verify that the result contains the mandatory resource, the resource that exports the package with the uses constraint and the provider of the package that the mandatory resource needs
+		c. verify that the result does not contain the optional resource
+		d. verify that the result does not contain the provider of the package that only the optional resource needs
+
+	2. verify that the same resources with the conflicting resource being mandatory do not resolve
+		a. verify that the resolution throws a ResolutionException

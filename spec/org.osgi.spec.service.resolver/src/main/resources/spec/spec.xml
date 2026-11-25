@@ -384,6 +384,54 @@
       operation. The resolver must find a solution that includes at least the
       initial mandatory resources and should include the optional
       resources.</para>
+
+      <para>An optional resource must never be the reason that the resolve
+      operation fails. If the mandatory resources can be resolved, the
+      resolve operation must succeed, even when one or more optional
+      resources cannot be part of the solution. This is not only the case
+      when an optional resource has an unsatisfied mandatory requirement. It
+      also applies when including the optional resource would make the
+      solution inconsistent, for example when its class space is in conflict
+      with a <code>uses</code> constraint of a resource that is part of the
+      solution, as shown in <xref linkend="i-optional-conflict"/>. The
+      resolver then does not include that optional resource, nor any
+      optional resource that can only be resolved with it, and does not
+      return wires for them.</para>
+
+      <para>A resolver should leave out only as many optional resources as
+      necessary to find a consistent solution. When more than one set of
+      optional resources can be left out, the preference order of the
+      capabilities returned by the Resolve Context applies, see <xref
+      linkend="i3344409"/>.</para>
+
+      <figure xml:id="i-optional-conflict">
+        <title>An optional resource in conflict with a mandatory resource</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata align="center" contentdepth="2.800in"
+                       contentwidth="5.600in"
+                       fileref="resolver-optional-conflict.svg"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>In the figure, <emphasis>A</emphasis> is mandatory and
+      <emphasis>B</emphasis> is optional, dashed elements are only needed
+      to resolve <emphasis>B</emphasis> and the dotted wire is the
+      alternative that <emphasis>M</emphasis> would need for it. Both import package
+      <code>q</code> that is exported by <emphasis>M</emphasis> with
+      <code>uses:="p"</code>, and <emphasis>M</emphasis> imports package
+      <code>p</code>. <emphasis>A</emphasis> needs version 1 of
+      <code>p</code> and <emphasis>B</emphasis> needs version 2. Because
+      <emphasis>M</emphasis> can only be wired to one exporter of
+      <code>p</code>, <emphasis>A</emphasis> and <emphasis>B</emphasis>
+      cannot both be resolved. The Resolver must return a result with
+      <emphasis>A</emphasis>, <emphasis>M</emphasis> and
+      <emphasis>P1</emphasis> and leave out <emphasis>B</emphasis>. If
+      <emphasis>B</emphasis> were also mandatory the Resolver must throw a
+      <xref linkend="org.osgi.service.resolver.ResolutionException"
+      xrefstyle="hyperlink"/>.</para>
     </section>
 
     <section xml:id="i3344409">

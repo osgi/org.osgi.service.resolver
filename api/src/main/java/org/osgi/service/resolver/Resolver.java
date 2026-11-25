@@ -34,7 +34,7 @@ import org.osgi.resource.Wiring;
  * by the caller.
  * 
  * @ThreadSafe
- * @author $Id$
+ * @author $Id: f924c86d2e580be407b2578da62bbb83b2c10c37 $
  */
 @ProviderType
 public interface Resolver {
@@ -52,8 +52,10 @@ public interface Resolver {
 	 * <li>Optional - any resource in the
 	 * {@link ResolveContext#getOptionalResources() optional group} may be
 	 * resolved. A failure to satisfy a mandatory requirement for a resource in
-	 * this group will not fail the overall resolution but no resources or wires
-	 * will be returned for that resource.</li>
+	 * this group, or any other reason that prevents the resource from being
+	 * part of a consistent solution like a conflict of its class space with
+	 * the resources of the solution, will not fail the overall resolution but
+	 * no resources or wires will be returned for that resource.</li>
 	 * </ul>
 	 * 
 	 * <p>
