@@ -820,6 +820,15 @@ public List&lt;Capability&gt; findProviders( Requirement requirement) {
       hosts. A Resolver should attach any fragments available in a resolution
       to suitable hosts.</para>
 
+      <para>A fragment is attached to each host individually. A host that
+      cannot be resolved with the fragment attached, for example because a
+      requirement of the fragment conflicts with a requirement of the host, is
+      not a suitable host for that fragment. Such a host is resolved without
+      the fragment and the fragment is still attached to every other suitable
+      host. Only if no suitable host is left, the fragment is not resolved,
+      which is a failure of the resolve operation only if the fragment is a
+      mandatory resource.</para>
+
       <para>In order to discover additional fragments which may be attached to
       the resources in a resolution the <xref
       linkend="org.osgi.service.resolver.ResolveContext.findRelatedResources-Resource-"

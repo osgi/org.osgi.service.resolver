@@ -141,6 +141,10 @@ I) Verify the resolver in an artificial namespace (ResolverTestCase.java)
 		b. verify that the resolution exception returns exactly one requirement for getUnresolvedRequirements
 		c. verify that this requirement fulfills the (symmetric) equals relationship with the unresolvable requirement of the mandatory resource
 
+	16. verify that a fragment is attached to each host individually (ResolveFragmentHostsTestCase.java)
+		a. verify that a fragment that conflicts with the package import of one of two hosts is attached to the other host only
+		b. verify that both hosts are resolved
+
 
 II) Verify the resolver in the osgi namespace by using framework test bundles and expecting the resolver to exhibit a behavior consistent with the framework resolver (ResolverFrameworkTestCase.java)
 
