@@ -17,7 +17,7 @@
     SPDX-License-Identifier: Apache-2.0 
  -->
 
-<chapter label="58" revision="$Id$"
+<chapter label="58" revision="$Id: fbf24caee06de4444c0e1d080b419f24e9b019c3 $"
          version="5.0" xml:id="service.resolver"
          xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -514,6 +514,20 @@
           string with a regular expression that detects the usage of an
           attribute name.</para>
         </listitem>
+
+        <listitem>
+          <para>A package capability that is declared by a fragment is
+          hosted by the hosts the fragment is attached to. The framework
+          associates the <code>bundle-symbolic-name</code> and
+          <code>bundle-version</code> of the host, not those of the fragment,
+          with such a capability. The requirement's filter must therefore be
+          matched against the attributes of the capability with these two
+          attributes taken from a host the fragment can be attached to. A
+          Resolver only knows the declared attributes of a hosted capability
+          and does not apply the values of the host itself. A resource that
+          imports a package with the symbolic name and version of the host is
+          then wired to the host through the hosted capability.</para>
+        </listitem>
       </itemizedlist>
 
       <para>The following example shows a skeleton <code>match</code> method
@@ -530,7 +544,7 @@
   String f = r.getDirectives().get( "filter" );
   if ( f  != null ) {
     Filter filter = context.createFilter( f );
-    if ( !filter.matches( c.getAttributes() ) )
+    if ( !filter.matches( attributesAsSeenByHost( c ) ) )
       return false;
   }
 
@@ -549,6 +563,24 @@
     attrs.remove(m.group(1)); // the attribute name
 
   return mandatory.isEmpty();
+}</programlisting>
+
+      <para>The <code>attributesAsSeenByHost</code> method returns the
+      attributes of the capability. For a package capability that is declared
+      by a fragment, the <code>bundle-symbolic-name</code> and
+      <code>bundle-version</code> attributes are replaced by those of a host
+      the fragment can be attached to; if there are several such hosts, the
+      capability is matched once per host:</para>
+
+      <programlisting>Map&lt;String,Object&gt; attributesAsSeenByHost(Capability c) {
+  Map&lt;String,Object&gt; attrs = new HashMap&lt;&gt;(c.getAttributes());
+  Resource declaring = c.getResource();
+  if ( isFragment( declaring ) &amp;&amp; c.getNamespace().equals( "osgi.wiring.package" ) ) {
+    Resource host = getHost( declaring );
+    attrs.put( "bundle-symbolic-name", symbolicName( host ) );
+    attrs.put( "bundle-version", version( host ) );
+  }
+  return attrs;
 }</programlisting>
     </section>
 
