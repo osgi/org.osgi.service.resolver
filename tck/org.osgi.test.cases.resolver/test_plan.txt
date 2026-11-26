@@ -142,6 +142,11 @@ I) Verify the resolver in an artificial namespace (ResolverTestCase.java)
 		c. verify that this requirement fulfills the (symmetric) equals relationship with the unresolvable requirement of the mandatory resource
 
 
+	16. verify that the cardinality directive of a requirement is ignored in the osgi.wiring.package and osgi.wiring.bundle namespaces (ResolveCardinalityTestCase.java)
+		a. verify that a requirement in the osgi.wiring.package namespace with a cardinality of multiple is wired to one of two matching capabilities only
+		b. verify that a requirement in the osgi.wiring.bundle namespace with a cardinality of multiple is wired to one of two matching capabilities only
+		c. verify that a requirement in a generic namespace with a cardinality of multiple is wired to both matching capabilities
+
 II) Verify the resolver in the osgi namespace by using framework test bundles and expecting the resolver to exhibit a behavior consistent with the framework resolver (ResolverFrameworkTestCase.java)
 
 	1. verify the correct resolving of dynamic imports
